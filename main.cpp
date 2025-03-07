@@ -1488,7 +1488,7 @@ static bool saveEntry(FILE* outFile, char* path, rk_entry_type type,
 }
 
 static inline uint32_t convertChipType(const char* chip) {
-	char buffer[5];
+	char buffer[577];
 	memset(buffer, 0, sizeof(buffer));
 	snprintf(buffer, sizeof(buffer), "%s", chip);
 	return buffer[0] << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3];
@@ -2063,7 +2063,7 @@ bool print_gpt(STRUCT_RKDEVICE_DESC &dev)
 	}
 	
 	printf("**********Partition Info(GPT)**********\r\n");
-	printf("NO  LBA       Name                \r\n");
+	printf("NO  LBA       END       Name                \r\n");
 	for (i = 0; i < le32_to_cpu(gptHead->num_partition_entries); i++) {
 		gptEntry = (gpt_entry *)(master_gpt + 2 * SECTOR_SIZE + i * GPT_ENTRY_SIZE);
 		if (memcmp(zerobuf, (u8 *)gptEntry, GPT_ENTRY_SIZE) == 0)
@@ -2074,7 +2074,7 @@ bool print_gpt(STRUCT_RKDEVICE_DESC &dev)
 			partName[j] = (char)gptEntry->partition_name[j];
 			j++;
 		}
-		printf("%02d  %08X  %s\r\n", i, (u32)le64_to_cpu(gptEntry->starting_lba), partName);
+		printf("%02d  %08X  %08X  %s\r\n", i, (u32)le64_to_cpu(gptEntry->starting_lba), (u32)le64_to_cpu(gptEntry->ending_lba),  partName);
 	}
 	bSuccess = true;
 Exit_PrintGpt:
@@ -3271,6 +3271,7 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 				if (*pszEnd)
 					printf("Len is invalid, please check!\r\n");
 				else {
+					printf("read begin:%08x len:%08x \r\n", uiBegin, uiLen);
 					bSuccess = read_lba(dev, uiBegin, uiLen, argv[4]);
 				}
 			}
